@@ -1,0 +1,31 @@
+# env
+.env
+.env.local
+
+# data
+data/
+*.sqlite
+*.sqlite3
+*.db
+
+# logs
+logs/
+*.log
+
+# python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# node
+node_modules/
+
+# editor
+.vscode/
+.idea/
+.DS_Store
+
+# claude code
+.claude/

@@ -1,0 +1,140 @@
+# =============================================================
+# whisky-rss 購読フィード一覧
+#
+# 各フィードの構造:
+#   - id: スラッグ (ユニーク、英数字とハイフン推奨)
+#     name: 表示名
+#     url: フィードURL (RSSHubは ${RSSHUB} を使うと .env の RSSHUB_BASE_URL に置換される)
+#     category: news | release | review | auction | sns
+#     region: jp | global
+#     enabled: true/false  (一時的にOFFにしたい時)
+#     notify: [discord, slack]  (どこに通知するか。省略時は両方)
+# =============================================================
+
+feeds:
+  # ---------------- JP — ネイティブRSS ----------------
+  - id: whisky-bunka-news
+    name: ウイスキー文化研究所 ニュース
+    url: https://scotchclub.org/feed
+    category: news
+    region: jp
+    enabled: true
+
+  - id: whisky-magazine-jp
+    name: WHISKY Magazine Japan
+    url: https://whiskymag.jp/feed/
+    category: news
+    region: jp
+    enabled: true
+
+  # ---------------- JP — RSSHub経由 ----------------
+  # 例: サントリー公式X
+  - id: x-suntory
+    name: X / SUNTORY公式
+    url: ${RSSHUB}/twitter/user/SUNTORY_dy
+    category: sns
+    region: jp
+    enabled: false  # X連携はトークン設定が必要なのでデフォルトOFF
+
+  # 例: 厚岸蒸溜所 公式サイト新着 (RSSHub の generic スクレイパー or 専用ルートを使用)
+  - id: akkeshi-news
+    name: 厚岸蒸溜所 新着
+    url: ${RSSHUB}/akkeshi/news
+    category: release
+    region: jp
+    enabled: false  # RSSHubルートが用意されているか要確認
+
+  # ---------------- 海外 — ネイティブRSS ----------------
+  - id: whisky-advocate
+    name: Whisky Advocate
+    url: https://whiskyadvocate.com/feed/
+    category: news
+    region: global
+    enabled: true
+
+  - id: whisky-magazine
+    name: Whisky Magazine (UK)
+    url: https://whiskymag.com/feed/
+    category: news
+    region: global
+    enabled: true
+
+  - id: master-of-malt
+    name: Master of Malt Blog
+    url: https://www.masterofmalt.com/blog/feed/
+    category: review
+    region: global
+    enabled: true
+
+  - id: the-whiskey-wash
+    name: The Whiskey Wash
+    url: https://thewhiskeywash.com/feed/
+    category: news
+    region: global
+    enabled: true
+
+  - id: twe-blog
+    name: The Whisky Exchange Blog
+    url: https://blog.thewhiskyexchange.com/feed/
+    category: review
+    region: global
+    enabled: true
+
+  - id: dramming
+    name: Dramming
+    url: https://www.dramming.com/feed/
+    category: review
+    region: global
+    enabled: true
+
+  - id: whisky-notes
+    name: Whisky Notes
+    url: https://www.whiskynotes.be/feed/
+    category: review
+    region: global
+    enabled: true
+
+  # ---------------- 海外 — RSSHub (Reddit) ----------------
+  - id: reddit-scotch
+    name: Reddit r/Scotch
+    url: ${RSSHUB}/reddit/subreddit/scotch/hot
+    category: sns
+    region: global
+    enabled: true
+
+  - id: reddit-whisky
+    name: Reddit r/whisky
+    url: ${RSSHUB}/reddit/subreddit/whisky/hot
+    category: sns
+    region: global
+    enabled: true
+
+  - id: reddit-japanesewhisky
+    name: Reddit r/JapaneseWhisky
+    url: ${RSSHUB}/reddit/subreddit/JapaneseWhisky/hot
+    category: sns
+    region: global
+    enabled: true
+
+  - id: reddit-bourbon
+    name: Reddit r/bourbon
+    url: ${RSSHUB}/reddit/subreddit/bourbon/hot
+    category: sns
+    region: global
+    enabled: true
+
+  # ---------------- オークション ----------------
+  - id: whisky-auctioneer
+    name: Whisky Auctioneer 新着
+    url: ${RSSHUB}/whiskyauctioneer/upcoming
+    category: auction
+    region: global
+    enabled: false  # 対応ルート要確認
+
+# =============================================================
+# 注意:
+# - RSSHub のルートは公式ドキュメント https://docs.rsshub.app/ で
+#   確認すること。サイト構造の変更で動かなくなることもある。
+# - 新しい情報源を追加したい場合: まずRSSHubで提供されているか検索 →
+#   なければ /rsshub-radar Chrome拡張で自動検出するか、generic ルートで対応。
+# =============================================================

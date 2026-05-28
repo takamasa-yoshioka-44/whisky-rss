@@ -1,0 +1,83 @@
+# =============================================================
+# 通知ルール定義
+#
+# match: 記事タイトル + 本文(冒頭抜粋)を対象に、大文字小文字無視で部分一致
+# 各ルールは「該当キーワードを含む記事」を「指定の通知先」に流す
+# include / exclude は配列、空ならその条件はスキップ
+# =============================================================
+
+rules:
+  # ジャパニーズウイスキー全般
+  - name: japanese-whisky
+    include:
+      - 山崎
+      - 白州
+      - 響
+      - 知多
+      - 余市
+      - 宮城峡
+      - 竹鶴
+      - イチローズ
+      - 厚岸
+      - 三郎丸
+      - 静岡蒸溜
+      - 嘉之助
+      - 桜尾
+      - 駒ヶ岳
+      - マルス
+      - 富士御殿場
+      - ジャパニーズウイスキー
+      - Japanese whisky
+    exclude:
+      - 転売
+      - 偽物
+    channels: [discord, slack]
+
+  # 抽選販売情報
+  - name: lottery
+    include:
+      - 抽選
+      - 応募
+      - lottery
+      - 当選
+      - 受付開始
+    exclude: []
+    channels: [discord]
+
+  # オークション
+  - name: auction
+    include:
+      - auction
+      - オークション
+      - 落札
+      - hammer
+    exclude: []
+    channels: [discord]
+
+  # スコッチ / バーボン注目銘柄
+  - name: world-whisky
+    include:
+      - Macallan
+      - Ardbeg
+      - Lagavulin
+      - Springbank
+      - Glenfiddich
+      - Glenlivet
+      - Pappy
+      - Buffalo Trace
+      - Weller
+      - Stagg
+      - cask strength
+    exclude: []
+    channels: [discord]
+
+  # キャッチオール: 上記のいずれにもマッチしないがウイスキー関連
+  # (デフォルトでは通知量が多くなるのでOFF推奨。Webhookを分けると吉)
+  - name: catch-all
+    include:
+      - whisky
+      - whiskey
+      - ウイスキー
+      - ウィスキー
+    exclude: []
+    channels: []  # 空 = 通知しない (DB保存・出力RSSのみに使う)

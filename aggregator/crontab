@@ -1,0 +1,3 @@
+# 30分ごとに収集 (FETCH_INTERVAL_MINに合わせて好きに変更)
+*/30 * * * * cd /app && python main.py >> /app/data/aggregator.log 2>&1
+# 必ず最後に改行が必要
