@@ -1,3 +1,5 @@
+# cron は最小PATHで動くため /usr/local/bin (pythonの実体) を明示
+PATH=/usr/local/bin:/usr/bin:/bin
 # 30分ごとに収集 (FETCH_INTERVAL_MINに合わせて好きに変更)
 */30 * * * * cd /app && python main.py >> /app/data/aggregator.log 2>&1
 # 必ず最後に改行が必要
