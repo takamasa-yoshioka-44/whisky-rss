@@ -51,6 +51,10 @@ def _post(url: str, json_body: dict, label: str) -> bool:
 
 def send_discord(payload: NotifyPayload) -> bool:
     if not DISCORD_WEBHOOK_URL:
+        log.warning(
+            "[discord] webhook URL not set; skipping notification for %r",
+            payload.title[:80],
+        )
         return False
     body = _truncate(payload.summary, NOTIFY_BODY_MAX_CHARS)
     embed = {
@@ -68,6 +72,10 @@ def send_discord(payload: NotifyPayload) -> bool:
 
 def send_slack(payload: NotifyPayload) -> bool:
     if not SLACK_WEBHOOK_URL:
+        log.warning(
+            "[slack] webhook URL not set; skipping notification for %r",
+            payload.title[:80],
+        )
         return False
     body = _truncate(payload.summary, NOTIFY_BODY_MAX_CHARS)
     text = (
@@ -78,9 +86,12 @@ def send_slack(payload: NotifyPayload) -> bool:
     return _post(SLACK_WEBHOOK_URL, {"text": text}, label="slack")
 
 
-def notify(payload: NotifyPayload, channels: Iterable[str]) -> None:
+def notify(payload: NotifyPayload, channels: Iterable[str]) -> bool:
+    """指定チャンネルへ通知。実際に1つでも配信成功したら True を返す。"""
     channels = set(channels or [])
+    sent = False
     if "discord" in channels:
-        send_discord(payload)
+        sent = send_discord(payload) or sent
     if "slack" in channels:
-        send_slack(payload)
+        sent = send_slack(payload) or sent
+    return sent

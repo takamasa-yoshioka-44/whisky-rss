@@ -47,7 +47,8 @@ feeds:
   # ---------------- 海外 — ネイティブRSS ----------------
   - id: whisky-advocate
     name: Whisky Advocate
-    url: https://whiskyadvocate.com/feed/
+    # 旧 /feed/ は 404。実フィードは /call/blogs/rss/ (2026-06 確認)
+    url: https://whiskyadvocate.com/call/blogs/rss/
     category: news
     region: global
     enabled: true
@@ -57,14 +58,14 @@ feeds:
     url: https://whiskymag.com/feed/
     category: news
     region: global
-    enabled: true
+    enabled: false  # /feed/ が404でRSS廃止。公開RSS未発見 (2026-06 確認)
 
   - id: master-of-malt
     name: Master of Malt Blog
     url: https://www.masterofmalt.com/blog/feed/
     category: review
     region: global
-    enabled: true
+    enabled: false  # Bot対策で全URL 429。サーバからの定期取得は不可 (2026-06 確認)
 
   - id: the-whiskey-wash
     name: The Whiskey Wash
@@ -78,14 +79,15 @@ feeds:
     url: https://blog.thewhiskyexchange.com/feed/
     category: review
     region: global
-    enabled: true
+    enabled: false  # ブログ廃止、/inspiration へ移行しRSSなし (2026-06 確認)
 
   - id: dramming
     name: Dramming
-    url: https://www.dramming.com/feed/
+    # www は NXDOMAIN。apex は TLSハンドシェイク失敗、httpはXML不正 = 復旧不能
+    url: https://dramming.com/feed/
     category: review
     region: global
-    enabled: true
+    enabled: false  # サーバ側TLS/フィード破損のため取得不可 (2026-06 確認)
 
   - id: whisky-notes
     name: Whisky Notes
@@ -94,31 +96,33 @@ feeds:
     region: global
     enabled: true
 
-  # ---------------- 海外 — RSSHub (Reddit) ----------------
+  # ---------------- 海外 — Reddit (公式ネイティブRSS) ----------------
+  # rsshub 経由 (${RSSHUB}/reddit/...) は 503 を返すため、Reddit公式の
+  # .rss エンドポイントを直接利用する (UA必須・main.py の USER_AGENT で付与)。
   - id: reddit-scotch
     name: Reddit r/Scotch
-    url: ${RSSHUB}/reddit/subreddit/scotch/hot
+    url: https://www.reddit.com/r/Scotch/hot/.rss
     category: sns
     region: global
     enabled: true
 
   - id: reddit-whisky
     name: Reddit r/whisky
-    url: ${RSSHUB}/reddit/subreddit/whisky/hot
+    url: https://www.reddit.com/r/whisky/hot/.rss
     category: sns
     region: global
     enabled: true
 
   - id: reddit-japanesewhisky
     name: Reddit r/JapaneseWhisky
-    url: ${RSSHUB}/reddit/subreddit/JapaneseWhisky/hot
+    url: https://www.reddit.com/r/JapaneseWhisky/hot/.rss
     category: sns
     region: global
     enabled: true
 
   - id: reddit-bourbon
     name: Reddit r/bourbon
-    url: ${RSSHUB}/reddit/subreddit/bourbon/hot
+    url: https://www.reddit.com/r/bourbon/hot/.rss
     category: sns
     region: global
     enabled: true

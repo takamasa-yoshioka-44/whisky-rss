@@ -82,9 +82,14 @@ def mark_seen(
     published: str | None,
     matched_rule: str | None = None,
     summary: str | None = None,
+    notified: bool = False,
 ) -> None:
-    """INSERT OR IGNORE で既読登録。matched_rule があれば notified_at を打つ。"""
-    notified_at = "datetime('now')" if matched_rule else "NULL"
+    """INSERT OR IGNORE で既読登録。
+
+    matched_rule: ルールにマッチしたか(分類・出力RSS用)。
+    notified: 実際に通知配信が成功したか。成功時のみ notified_at を打つ。
+    """
+    notified_at = "datetime('now')" if notified else "NULL"
     with connect() as conn:
         conn.execute(
             f"""
@@ -103,7 +108,10 @@ def recent_notified(
     rule: str | None = None, days: int = 30, limit: int = 200
 ) -> list[dict]:
     """通知対象になった記事を新しい順で返す。rule=None なら全 rule 横断。"""
-    where = ["matched_rule IS NOT NULL", "notified_at >= datetime('now', ?)"]
+    where = [
+        "matched_rule IS NOT NULL",
+        "COALESCE(notified_at, first_seen_at) >= datetime('now', ?)",
+    ]
     params: list[object] = [f"-{int(days)} days"]
     if rule:
         where.append("matched_rule = ?")
@@ -113,7 +121,7 @@ def recent_notified(
                matched_rule, notified_at
         FROM seen_entries
         WHERE {' AND '.join(where)}
-        ORDER BY notified_at DESC, first_seen_at DESC
+        ORDER BY COALESCE(notified_at, first_seen_at) DESC, first_seen_at DESC
         LIMIT ?
     """
     params.append(int(limit))

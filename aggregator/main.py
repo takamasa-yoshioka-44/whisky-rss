@@ -33,6 +33,14 @@ from storage import (
 CONFIG_DIR = Path(os.environ.get("WHISKY_CONFIG_DIR", "/app/config"))
 RSSHUB_BASE_URL = os.environ.get("RSSHUB_BASE_URL", "http://rsshub:1200").rstrip("/")
 
+# 一部のサイトは Python/feedparser のデフォルト UA を 403/429 でブロックするため、
+# ブラウザ相当の User-Agent を付与して取得する。
+USER_AGENT = os.environ.get(
+    "FEED_USER_AGENT",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+)
+
 logging.basicConfig(
     level=os.environ.get("LOG_LEVEL", "INFO"),
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -144,7 +152,7 @@ def _summary_text(entry: Any) -> str:
 def process_feed(feed: Feed, rules: list[Rule]) -> tuple[int, int]:
     """1フィードを処理。 (new_entries, notified) を返す。"""
     log.info("[%s] fetching %s", feed.id, feed.url)
-    parsed = feedparser.parse(feed.url)
+    parsed = feedparser.parse(feed.url, agent=USER_AGENT)
     if parsed.bozo and not parsed.entries:
         log.warning("[%s] parse failed: %s", feed.id, parsed.bozo_exception)
         return (0, 0)
@@ -166,6 +174,7 @@ def process_feed(feed: Feed, rules: list[Rule]) -> tuple[int, int]:
 
         rule = match_rule(entry, rules)
         matched_rule: str | None = None
+        sent = False
         if rule and rule.channels:
             channels = feed.notify or rule.channels
             payload = NotifyPayload(
@@ -175,19 +184,38 @@ def process_feed(feed: Feed, rules: list[Rule]) -> tuple[int, int]:
                 summary=summary,
                 matched_rule=rule.name,
             )
-            notify(payload, channels)
-            notify_count += 1
+            sent = notify(payload, channels)
             matched_rule = rule.name
-            log.info(
-                "[%s] notify: rule=%s title=%r",
-                feed.id,
-                rule.name,
-                title[:80],
-            )
+            if sent:
+                notify_count += 1
+                log.info(
+                    "[%s] notify OK: rule=%s channels=%s title=%r",
+                    feed.id,
+                    rule.name,
+                    ",".join(channels),
+                    title[:80],
+                )
+            else:
+                log.warning(
+                    "[%s] notify FAILED (no channel delivered): rule=%s channels=%s title=%r",
+                    feed.id,
+                    rule.name,
+                    ",".join(channels),
+                    title[:80],
+                )
         else:
             log.debug("[%s] skip (no rule match): %r", feed.id, title[:80])
 
-        mark_seen(eid, feed.id, title, link, published, matched_rule, summary)
+        if rule and rule.channels and not sent:
+            # 配信に失敗したマッチ記事は既読化しない。
+            # 既読化すると次回以降「新着ではない」と判定され永久に再送されなくなるため、
+            # あえて未登録のままにして次サイクルで再試行させる。
+            log.info("[%s] not marking seen; will retry next cycle: %r", feed.id, title[:80])
+            continue
+
+        mark_seen(
+            eid, feed.id, title, link, published, matched_rule, summary, notified=sent
+        )
 
     log.info("[%s] new=%d notified=%d", feed.id, new_count, notify_count)
     return (new_count, notify_count)
