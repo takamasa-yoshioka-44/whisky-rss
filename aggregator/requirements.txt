@@ -3,3 +3,4 @@ requests==2.32.3
 PyYAML==6.0.2
 python-dateutil==2.9.0.post0
 feedgen==1.0.0
+langdetect==1.0.9

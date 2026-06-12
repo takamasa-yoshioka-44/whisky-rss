@@ -8,7 +8,12 @@ from typing import Iterable
 
 import requests
 
+from translator import maybe_translate
+
 log = logging.getLogger(__name__)
+
+# Discord embed の description 上限(API 仕様は 4096 字)
+DISCORD_DESC_MAX_CHARS = 4096
 
 DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL", "").strip()
 SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL", "").strip()
@@ -56,11 +61,33 @@ def send_discord(payload: NotifyPayload) -> bool:
             payload.title[:80],
         )
         return False
-    body = _truncate(payload.summary, NOTIFY_BODY_MAX_CHARS)
+    # 英語記事ならタイトル・本文を翻訳して併記する。
+    # 翻訳が走らない(日本語記事 / キー未設定 / 失敗)場合は従来どおりの出力になる。
+    t_title, title_translated = maybe_translate(payload.title)
+    t_body, body_translated = maybe_translate(payload.summary)
+
+    orig_body = _truncate(payload.summary, NOTIFY_BODY_MAX_CHARS)
+
+    if title_translated or body_translated:
+        # 訳文を主に、原文を末尾に併記
+        main_body = _truncate(t_body, NOTIFY_BODY_MAX_CHARS) if body_translated else orig_body
+        orig_lines = []
+        if title_translated:
+            orig_lines.append(_truncate(payload.title, 240))
+        orig_lines.append(orig_body)
+        description = _truncate(
+            main_body + "\n\n—— 原文 / Original ——\n" + "\n".join(orig_lines),
+            DISCORD_DESC_MAX_CHARS,
+        )
+        title = _truncate(t_title if title_translated else payload.title, 240)
+    else:
+        description = orig_body
+        title = _truncate(payload.title, 240)
+
     embed = {
-        "title": _truncate(payload.title, 240),
+        "title": title,
         "url": payload.link,
-        "description": body,
+        "description": description,
         "footer": {"text": f"{payload.feed_name} · rule: {payload.matched_rule}"},
     }
     return _post(

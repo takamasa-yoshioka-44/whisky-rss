@@ -67,6 +67,10 @@ services:
       SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
       FETCH_INTERVAL_MIN: ${FETCH_INTERVAL_MIN}
       NOTIFY_BODY_MAX_CHARS: ${NOTIFY_BODY_MAX_CHARS}
+      # DeepL 翻訳 (空なら翻訳せず原文のまま通知)
+      DEEPL_API_KEY: ${DEEPL_API_KEY:-}
+      DEEPL_API_URL: ${DEEPL_API_URL:-https://api-free.deepl.com/v2/translate}
+      TRANSLATE_TARGET_LANG: ${TRANSLATE_TARGET_LANG:-JA}
       # フィルタ済みRSSの自己参照URL(Miniflux等が <link rel="self"> を見るため)
       WHISKY_OUT_PUBLIC_URL: ${WHISKY_OUT_PUBLIC_URL:-http://whisky-out}
     volumes:
