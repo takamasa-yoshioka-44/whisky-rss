@@ -21,4 +21,6 @@ COPY crontab /etc/cron.d/whisky-rss
 RUN chmod 0644 /etc/cron.d/whisky-rss && crontab /etc/cron.d/whisky-rss
 
 # 起動時に1回走らせてから cron foreground
-CMD ["sh", "-c", "python /app/main.py || true; cron -f"]
+# cron はジョブ実行時に環境変数を継承しないため、コンテナの環境を
+# /app/container.env にダンプしておき、crontab 側で読み込ませる。
+CMD ["sh", "-c", "export -p > /app/container.env; python /app/main.py || true; cron -f"]
